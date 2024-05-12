@@ -42,7 +42,8 @@ class _LandingPageState extends State<LandingPage> {
 
       bottomNavigationBar: new Theme(
         data: Theme.of(context).copyWith(
-        canvasColor:  Color(0xFFFDE3163),
+        canvasColor:    Color(0xFFF150B29)
+          ,
             textTheme: Theme
             .of(context)
             .textTheme

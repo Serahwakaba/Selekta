@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../data/eventsData.dart';
@@ -85,11 +86,12 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SingleChildScrollView(
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.black, Colors.purple, Colors.pink],
-            ),
+            color:  Color(0xFFF150B29)
+            // gradient: LinearGradient(
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            //   colors: [Colors.black, Colors.purple, Colors.pink],
+            // ),
           ),
           child: Center(
             child: Column(
@@ -99,19 +101,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 Row(
                   children: [
                     SizedBox(width: 20,),
-                    GestureDetector(
-                        onTap: (){
-                          Navigator.pop(context);
-                        },
-                        child: Icon(Icons.arrow_back_ios_new_outlined,color: Colors.white,size: 26,)),
-                    SizedBox(width: 120,),
-                    Text(
-                      'DJS',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Colors.white,
+                    Container(
+                        width: 80,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
+                          child: Image.asset(
+                            'assets/logo.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
+                    SizedBox(width: 120,),
+
                     Spacer(),
                     Container(
                       width: 100,
@@ -127,22 +130,25 @@ class _MyHomePageState extends State<MyHomePage> {
                       SizedBox(width: 20,)
                   ],
                 ),
-                SizedBox(height: 20,),
                 Container(
-                  height: 120,
                   decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Colors.pink, Colors.purple,Colors.orange],
-                      ),
+                      // gradient: LinearGradient(
+                      //   begin: Alignment.topLeft,
+                      //   end: Alignment.bottomRight,
+                      //   colors: [Colors.pink, Colors.purple,Colors.orange],
+                      // ),
                     borderRadius: BorderRadius.all(Radius.circular(20))
                   ),
                   margin: EdgeInsets.only(left: 20,top: 20,right: 20),
-                  padding: EdgeInsets.only(left: 20,top: 20,right: 20),
+                  padding: EdgeInsets.only(left: 20,right: 20),
 
-                  child: Text("Amazing Events In  Your Area",style: TextStyle(color: Colors.white,fontSize: 28,fontWeight: FontWeight.w600),textAlign: TextAlign.center,),),
-                SizedBox(height: 30,),
+                  child: Row(
+                    children: [
+                      Text("AMAZING EVENTS \n IN  YOUR AREA",style: TextStyle(color: Colors.white,fontSize: 26,fontWeight: FontWeight.w800),textAlign: TextAlign.left,),
+
+                    ],
+                  ),),
+                SizedBox(height: 20,),
                 Container(
                   margin: EdgeInsets.only(left: 20,right: 20),
                   child: TextField(
@@ -183,8 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
                             },
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.pinkAccent, // Background color of the button
-                            onPrimary: Colors.white, // Text color of the button
+                            primary: Colors.yellow, // Background color of the button
+                            onPrimary: Colors.black, // Text color of the button
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10), // Rounded corners
                             ),
@@ -216,19 +222,41 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(
                       children: [
                         Text("Events",style: TextStyle(fontSize: 24,fontWeight: FontWeight.w600,color: Colors.white),),
-                       Spacer(),
-                        Text("See All",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w600,color: Colors.white,decoration: TextDecoration.underline),),
 
                       ],
                     )),
+                SizedBox(height: 20,),
+                // SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   child: Column(
+                //     children: [
+                //       for(var event in eventsModel)eventsWidget(event)
+                //     ],
+                //   ),
+                // ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
+                  child: Column(
                     children: [
-                      for(var event in eventsModel)eventsWidget(event)
+                      // Split events into pairs
+                      for (int i = 0; i < eventsModel.length; i += 2)
+                        Container(
+                          margin: EdgeInsets.only(bottom: 20),
+                          child: Row(
+                            children: [
+                              Container(
+                                  child: eventsWidget(eventsModel[i])),
+                              if (i + 1 < eventsModel.length)
+                                Container(
+
+                                    child: eventsWidget(eventsModel[i + 1])),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
-                ),              ],
+                ),
+              ],
             ),
           ),
         ),
@@ -280,8 +308,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Text(event.title,style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
-
-            SizedBox(height: 10,),
             Text(
               event.description!.length > 30
                   ? '${event.description?.substring(0, 30)}...'
@@ -293,11 +319,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
             SizedBox(height: 10),
             Row(children: [
-              Icon(Icons.favorite,color: Colors.red),
+              Icon(Icons.favorite,color: Colors.yellow),
               SizedBox(width: 20,),
-              Icon(Icons.recommend,color: Colors.orange),
+              Icon(Icons.recommend,color: Colors.yellow),
               SizedBox(width:20,),
-              Icon(Icons.message,color: Colors.green),
+              Icon(Icons.message,color: Colors.yellow),
             ],)
           ],),),
     );

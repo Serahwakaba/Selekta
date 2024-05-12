@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:http/http.dart' as http;
 
 import '../data/eventsData.dart';
 import '../models/artist_details_model.dart';
 import '../models/events_modell.dart';
+import '../models/requests.dart';
 import '../utils/app_utils.dart';
 import '../utils/exceptions.dart';
 import 'landing_page.dart';
@@ -23,6 +27,42 @@ class _EventDetailsState extends State<EventDetails> {
   final TextEditingController songTitleController = TextEditingController();
   final TextEditingController songArtistController = TextEditingController();
   final TextEditingController songAmountController = TextEditingController();
+   bool isLoading = false;
+  List<Requests> _searchResults = [];
+  TextEditingController _searchController = TextEditingController();
+
+  bool isChecked = false;
+
+  // fetchRequests(){
+  //   getSongRequests(_searchController.text).then((value){
+  //     _searchResults  = value;
+  //     setState(() {
+  //       _searchResults  = value;
+  //     });
+  //   }).catchError((onError){
+  //     if(onError is UnableToProcess){
+  //       EasyLoading.showError("An error occurred:${onError.reason} ",duration: Duration(seconds: 20),dismissOnTap: true);
+  //     }else{
+  //       EasyLoading.showError("Error loading music data ",duration: Duration(seconds: 20),dismissOnTap: true);
+  //     }
+  //   });
+  // }
+
+  fetchRequests() {
+    setState(() {
+      isLoading = true;
+    });
+    getSongRequests(_searchController.text).then((value) {
+        setState(() {
+          isLoading = false;
+          _searchResults  = value;
+        });
+      }
+
+
+
+    );
+  }
 
 
   bool isBalancedString(String inputString) {
@@ -89,19 +129,50 @@ class _EventDetailsState extends State<EventDetails> {
       );
     }); }
 
+
   @override
   void initState() {
     loadEventsDetails();
+    fetchRequests();
     // getData();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor:Color(0xFFF150B29),
+
+leading:  IconButton(onPressed: (){
+  Navigator.pop(context);
+}
+    , icon: Icon(Icons.chevron_left,color: Colors.grey,)),
+      title:     Container(
+
+        child: Row(
+          children: [
+
+
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
+              child: Image.asset(
+                'assets/logo.png',
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-             for(var details in artistDetails)Details(details)
+
+            for(var details in artistDetails)Details(details)
           ],
         )
     ));
@@ -111,69 +182,67 @@ class _EventDetailsState extends State<EventDetails> {
   Widget Details(ArtistDetailsModel details){
     return  Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.black, Colors.purple, Colors.pink],
-        ),
+          color:  Color(0xFFF150B29)
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          ClipPath(
-            clipper: CurvedClipper(),
-            child:  Image.asset(
-              'assets/dj.jpg',
-              height: 400,
-              fit: BoxFit.cover,),
-          ),
           Container(
-            margin: EdgeInsets.only(left: 20,right: 20),
+            margin: EdgeInsets.only(left: 30,right: 10,top: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(details.stageName,style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold,color: Colors.white),),
-                Text(details.description,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),),
 
-                SizedBox(height: 10,),
-                Text("ksh 200/Request",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.orangeAccent),),
-                SizedBox(height: 40,),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    SizedBox(width: 20,),
-                    ElevatedButton(
-                      onPressed: (){
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: RequestMusic(),
-
-                              );
-
-
-                            });
-                      }
-                      ,
-                      child: Text("REQUEST NOW"),
+                    Text(details.stageName,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),),
+                  Spacer(),
+                    Column(
+                      children: [
+                        Text("KSH 50/-",style: TextStyle(fontSize: 18,color: Colors.white,fontWeight: FontWeight.w400),),
+                        Text("PER MUSIC",style: TextStyle(fontSize: 10,color: Colors.white),),
+                      ],
                     ),
                   ],
+                ),
+                Text(details.description,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),),
+                SizedBox(height: 20,),
+                Container(
+                  width: double.infinity,
+                  height: 160,
+                  child:ClipRRect(
+                    borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
+                    child: Image.asset(
+                      "assets/d.jpg",
+                      width: double.infinity,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
 
                 SizedBox(height: 20,),
 
                 Container(
-                    child: Text("Recently Played",style: TextStyle(fontSize:18,fontWeight: FontWeight.w600,color: Colors.white),)),
-                SizedBox(height: 40,),
+                    child: Text("Search to request",style: TextStyle(fontSize:18,fontWeight: FontWeight.w600,color: Colors.white),)),
+                SizedBox(height: 20,),
                 Container(
-                  margin: EdgeInsets.only(left: 20,right: 20),
                   child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      fetchRequests();
+                    },
+                    style: TextStyle(color: Colors.white),
+
                     decoration: InputDecoration(
                       hintText: 'Search Music',
                       hintStyle: TextStyle(color: Colors.white),
-                      prefixIcon: Icon(Icons.search),
+
+                      prefixIcon: IconButton(
+                          onPressed: () {
+                            fetchRequests()  ;                        },
+                          icon: Icon(Icons.search)),
                       contentPadding: EdgeInsets.only(left: 20,right: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -181,13 +250,103 @@ class _EventDetailsState extends State<EventDetails> {
                     ),
                   ),
                 ),
-
-                DJListItem(),
+              SizedBox(height: 20,),
+                DJListItem(searchResults: _searchResults),
 
               ],
-            ),)
+            ),),
         ],),
     );
+  }
+  Widget  DJListItem({required List<Requests> searchResults}){
+    return  Stack(
+      children: [
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                height: 500,
+                margin: EdgeInsets.only(bottom: 0, top: 0),
+                child: ListView.builder(
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final song = _searchResults[index];
+                    return Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(),
+                      child: ListTile(
+                        leading: Container(
+                          width: 60,
+                          height: 80,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.asset(
+                              'assets/intro.jpg',
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Text('Failed to load image'),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          song.title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              song.artistName,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                        trailing: Checkbox(
+                          value: isChecked,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              isChecked = value!;
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          bottom: 180, // Adjust the position as needed
+          right: 10, // Adjust the position as needed
+          child: Container(
+            width: 100,
+            height: 50,
+            child: FloatingActionButton(
+              onPressed: () {
+                // Handle button press
+              },
+              child: Text("REQUEST"),
+            ),
+          ),
+        ),
+      ],
+    );
+
+
   }
   Widget RequestMusic(){
     return Container(
@@ -310,86 +469,9 @@ class _EventDetailsState extends State<EventDetails> {
         ],),
     );
   }
-  Widget  DJListItem(){
-    return SingleChildScrollView(
-      child:
-      Column(
-        children: [
 
-          Container(
-              height: 500,
-              margin: EdgeInsets.only(bottom: 0,top: 0),
-              child: ListView.builder(
-                  itemCount: 5,
-                  itemBuilder: (context, index)
-                  {
-                    return
-                      Container(
-                        margin: EdgeInsets.only(bottom: 20),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(width: 1, color: Colors.pinkAccent ),
-                          ),
-                        ),
-                        child: ListTile(
-                          leading:  Container(
-                            width: 80,
-                            height: 200,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
-                              child: Image.asset(
-                                'assets/dj.jpg',
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-
-                          title: Text("Marce",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Hafe",style: TextStyle(color: Colors.white)),
-                              SizedBox(height:10,),
-
-                            ],
-                          ),
-                          trailing: Container(
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 100,
-                                  height: 30,
-                                  margin: EdgeInsets.only(top: 10),
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        backgroundColor: Color(0xFFF0096FF
-                                        )
-                                    ),
-
-                                    onPressed: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => EventDetails()),
-                                    ),
-                                    child: Text('Request',style: TextStyle(color: Colors.black,fontSize: 10),),
-                                  ),
-                                ),
-
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-
-                  })
-          ),
-        ],
-      ),
-    );
-
-  }
 }
+
 class CurvedClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

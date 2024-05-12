@@ -160,7 +160,7 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                       child: ElevatedButton(
                         onPressed: () {
                           var payload = {
-                            "username": userNameController.text,
+                            "mobile": userNameController.text,
                             "password": passwordController.text,
                           };
                           if(userNameController.text.isEmpty ){
@@ -214,23 +214,8 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                 
                 Container(
                             child: Text("Sign Up",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600,color: Colors.white),),),
-                          SizedBox(height: 20,),
-                            Container(child: Text("USER NAME",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.white),),),
-                SizedBox(height: 10,),
-                Container(
-                child: TextField(
-                  controller: userNameController,
-                  decoration: InputDecoration(
-                    hintText: 'enter username',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    contentPadding: EdgeInsets.only(left: 20,right: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  style: TextStyle(color: Colors.white),
-                ),
-                            ),
+                          SizedBox(height: 10,),
+
                 SizedBox(height: 20,),
                 Container(child: Text("PHONE NUMBER",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.white),),),
                 SizedBox(height: 10,),
@@ -250,6 +235,22 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                   ),
                 ),
                 SizedBox(height: 20,),
+                              Container(child: Text("FULL NAMES",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.white),),),
+                              SizedBox(height: 10,),
+                              Container(
+                                child: TextField(
+                                  controller: userNameController,
+                                  decoration: InputDecoration(
+                                    hintText:' full Names',
+                                    hintStyle: TextStyle(color: Colors.grey),
+                                    contentPadding: EdgeInsets.only(left: 20,right: 20),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
                 Container(child: Text("EMAIL",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.white),),),
                 SizedBox(height: 10,),
                 Container(
@@ -324,13 +325,12 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                   child: ElevatedButton(
                     onPressed: () {
                       var payload = {
-                        "username": userNameController.text,
+                        "fullname": userNameController.text,
                         "role_id": 1,
                         "password": passwordController.text,
                         "mobile": mobileController.text,
                         "email": emailController.text,
-                        "fullname": "John Doe",
-                        "country": "USA"
+                        "country": "Kenya"
                       };
                       if(mobileController.text.isEmpty ){
                         EasyLoading.showError("Please enter your phone number",dismissOnTap: true,duration:Duration(seconds: 10));

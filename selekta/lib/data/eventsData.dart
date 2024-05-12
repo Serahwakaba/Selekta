@@ -7,6 +7,7 @@ import '../models/artist_details_model.dart';
 import '../models/events_modell.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/requests.dart';
 import '../utils/exceptions.dart';
 
 
@@ -68,6 +69,31 @@ Future<List<ArtistDetailsModel>> getArtistDetails(payload) async{
     var jsonSkills = decoded['data'];
 
     return List.generate(jsonSkills.length, (index) => ArtistDetailsModel.fromJson(jsonSkills[index]));
+  }else{
+    return [];
+  }
+
+}
+
+Future<List<Requests>> getSongRequests(String query) async{
+  final endpoint =  "https://deezerdevs-deezer.p.rapidapi.com/search?q=$query";
+  var url = Uri.parse(endpoint);
+  var headers = {
+  "x-rapidapi-key": "ca1a2218b9mshb23d46857c7a8b7p1b0855jsn03b50861d10f",
+  "x-rapidapi-host": "deezerdevs-deezer.p.rapidapi.com",
+  };
+  var response = await http.get(url,headers: headers);
+  var decoded = jsonDecode(response.body);
+
+   print('this is my search music api$decoded');
+
+  if (response.statusCode < 200 || response.statusCode > 299) {
+    throw UnableToProcess(reason: decoded.toString());
+  }
+  if (decoded.containsKey("data")){
+    var jsonSkills = decoded['data'];
+
+    return List.generate(jsonSkills.length, (index) => Requests.fromJson(jsonSkills[index]));
   }else{
     return [];
   }

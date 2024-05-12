@@ -14,11 +14,8 @@ class _RequestaPageState extends State<RequestaPage> {
     return Scaffold(
       body:Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.black, Colors.purple, Colors.pink],
-          ),
+            color:  Color(0xFFF150B29)
+
         ),
         child: Column(children: [
           SizedBox(height: 60),
