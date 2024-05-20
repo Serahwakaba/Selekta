@@ -70,11 +70,7 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
       ),
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.black, Colors.purple, Colors.pink],
-          ),
+          color: Color(0xFFF150B29)
         ),
         child: TabBarView(
             controller: _tabController,
@@ -185,8 +181,8 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.pinkAccent, // Background color of the button
-                          onPrimary: Colors.white, // Text color of the button
+                          primary: Colors.yellow, // Background color of the button
+                          onPrimary: Colors.black, // Text color of the button
                           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15), // Button padding
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10), // Rounded corners
@@ -355,8 +351,8 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                       // Handle sign-up button press
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.pinkAccent, // Background color of the button
-                      onPrimary: Colors.white, // Text color of the button
+                      primary: Colors.yellow, // Background color of the button
+                      onPrimary: Colors.black, // Text color of the button
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // Rounded corners

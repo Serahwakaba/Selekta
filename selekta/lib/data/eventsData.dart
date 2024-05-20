@@ -12,13 +12,16 @@ import '../utils/exceptions.dart';
 
 
 Future<List<EventsModel>> getEvents(payload) async{
-  const endpoint =  "https://selekta.mocyiltd.com/api/events/list";
+  const endpoint =  "https://api.selekta.cc/events/list";
   var url = Uri.parse(endpoint);
   var headers = {
     "Content-Type": "application/json"
   };
   var response = await http.post(url,headers: headers,body: jsonEncode(payload));
   var decoded = jsonDecode(response.body);
+  if (kDebugMode) {
+    print(decoded);
+  }
 
   if (response.statusCode < 200 || response.statusCode > 299) {
     throw UnableToProcess(reason: decoded.toString());
@@ -35,7 +38,7 @@ Future<List<EventsModel>> getEvents(payload) async{
 
 
 Future<Map<String, dynamic>> createEvents(Map<String,dynamic> payload) async {
-  const endpoint =  "https://selekta.mocyiltd.com/api/events/create";
+  const endpoint =  "https://api.selekta.cc/events/create";
   var url = Uri.parse(endpoint);
 
   var headers = {
@@ -56,7 +59,7 @@ Future<Map<String, dynamic>> createEvents(Map<String,dynamic> payload) async {
 
 Future<List<ArtistDetailsModel>> getArtistDetails(payload) async{
 
-  const endpoint = "https://selekta.mocyiltd.com/api/artists/list";
+  const endpoint = "https://api.selekta.cc/artists/list";
   var url = Uri.parse(endpoint);
 
   var response = await http.post(url,body: jsonEncode(payload));

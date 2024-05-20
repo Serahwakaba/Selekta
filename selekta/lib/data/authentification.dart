@@ -5,7 +5,7 @@ import '../utils/exceptions.dart';
 import 'package:http/http.dart' as http;
 
 Future<Map<String, dynamic>> signUp(Map<String,dynamic> payload) async {
-  const endpoint =  "https://selekta.mocyiltd.com/api/auth/signup";
+  const endpoint =  "https://api.selekta.cc/auth/signup";
   var url = Uri.parse(endpoint);
 
   var headers = {
@@ -27,7 +27,7 @@ Future<Map<String, dynamic>> signUp(Map<String,dynamic> payload) async {
   return decoded;
 }
 Future<Map<String, dynamic>> login(Map<String,dynamic> payload) async {
-  const endpoint =  "https://selekta.mocyiltd.com/api/auth/login";
+  const endpoint =  "https://api.selekta.cc/auth/login";
   var url = Uri.parse(endpoint);
 
   var headers = {

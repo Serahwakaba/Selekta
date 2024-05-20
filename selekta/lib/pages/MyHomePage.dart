@@ -56,6 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
   }
+
   loadEvents(){
     var payload = { };
   getEvents(payload).then((value){
@@ -87,11 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Container(
           decoration: BoxDecoration(
             color:  Color(0xFFF150B29)
-            // gradient: LinearGradient(
-            //   begin: Alignment.topLeft,
-            //   end: Alignment.bottomRight,
-            //   colors: [Colors.black, Colors.purple, Colors.pink],
-            // ),
+
           ),
           child: Center(
             child: Column(
@@ -113,9 +110,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       ),
-                    SizedBox(width: 120,),
 
+                    SizedBox(width: 120,),
                     Spacer(),
+
                     Container(
                       width: 100,
                       height: 30,
@@ -410,9 +408,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
           Container(child: Text("Event Name",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.black),),),
           SizedBox(height: 10,),
-
           Container(
-
             child: TextField(
               controller: titleController,
               decoration: InputDecoration(

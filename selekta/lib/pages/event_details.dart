@@ -21,17 +21,21 @@ class EventDetails extends StatefulWidget {
 }
 
 class _EventDetailsState extends State<EventDetails> {
-  List<ArtistDetailsModel> artistDetails=[];
+  List<ArtistDetailsModel> artistDetails = [];
   final characterCounts = <String, int>{};
   String access_token = "";
   final TextEditingController songTitleController = TextEditingController();
   final TextEditingController songArtistController = TextEditingController();
   final TextEditingController songAmountController = TextEditingController();
-   bool isLoading = false;
+  final TextEditingController phoneController = TextEditingController();
+
+  bool isLoading = false;
   List<Requests> _searchResults = [];
+  List<Requests> _selectedSongs = [];
+
   TextEditingController _searchController = TextEditingController();
 
-  bool isChecked = false;
+  int? isChecked;
 
   // fetchRequests(){
   //   getSongRequests(_searchController.text).then((value){
@@ -53,12 +57,11 @@ class _EventDetailsState extends State<EventDetails> {
       isLoading = true;
     });
     getSongRequests(_searchController.text).then((value) {
-        setState(() {
-          isLoading = false;
-          _searchResults  = value;
-        });
-      }
-
+      setState(() {
+        isLoading = false;
+        _searchResults = value;
+      });
+    }
 
 
     );
@@ -68,7 +71,8 @@ class _EventDetailsState extends State<EventDetails> {
   bool isBalancedString(String inputString) {
     // Count occurrences of each character.
     final characterCounts = <String, int>{};
-    for (var character in inputString.runes.map((codePoint) => String.fromCharCode(codePoint))) {
+    for (var character in inputString.runes.map((codePoint) =>
+        String.fromCharCode(codePoint))) {
       characterCounts[character] = (characterCounts[character] ?? 0) + 1;
     }
 
@@ -80,11 +84,11 @@ class _EventDetailsState extends State<EventDetails> {
   }
 
   bool balanced(String inputString) {
-
-    final numberCount = <String,int>{};
-    for(var character in inputString.runes.map((code)  => String.fromCharCode(code))){
+    final numberCount = <String, int>{};
+    for (var character in inputString.runes.map((code) =>
+        String.fromCharCode(code))) {
       numberCount[character] =
-          (numberCount[character] ?? 0)+ 1;
+          (numberCount[character] ?? 0) + 1;
     }
 
     //get the counts
@@ -96,7 +100,7 @@ class _EventDetailsState extends State<EventDetails> {
     //return true;
   }
 
-  loadEventsDetails(){
+  loadEventsDetails() {
     getPrefsString("access_token").then((value) async {
       if (value.isEmpty) {
         return;
@@ -127,7 +131,8 @@ class _EventDetailsState extends State<EventDetails> {
         }
       }
       );
-    }); }
+    });
+  }
 
 
   @override
@@ -141,78 +146,88 @@ class _EventDetailsState extends State<EventDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor:Color(0xFFF150B29),
+        appBar: AppBar(
+          backgroundColor: Color(0xFFF150B29),
 
-leading:  IconButton(onPressed: (){
-  Navigator.pop(context);
-}
-    , icon: Icon(Icons.chevron_left,color: Colors.grey,)),
-      title:     Container(
+          leading: IconButton(onPressed: () {
+            Navigator.pop(context);
+          }
+              , icon: Icon(Icons.chevron_left, color: Colors.grey,)),
+          title: Container(
 
-        child: Row(
-          children: [
+            child: Row(
+              children: [
 
 
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
-              child: Image.asset(
-                'assets/logo.png',
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-              ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  // Adjust the radius value as needed
+                  child: Image.asset(
+                    'assets/logo.png',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+
         ),
-      ),
+        body: SingleChildScrollView(
+            child: Column(
+              children: [
 
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-
-            for(var details in artistDetails)Details(details)
-          ],
-        )
-    ));
+                for(var details in artistDetails)Details(details)
+              ],
+            )
+        ));
   }
- // for(var details in artistDetails)Details(details)
 
-  Widget Details(ArtistDetailsModel details){
-    return  Container(
+  // for(var details in artistDetails)Details(details)
+
+  Widget Details(ArtistDetailsModel details) {
+    return Container(
       decoration: BoxDecoration(
-          color:  Color(0xFFF150B29)
+          color: Color(0xFFF150B29)
 
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: EdgeInsets.only(left: 30,right: 10,top: 10),
+            margin: EdgeInsets.only(left: 30, right: 10, top: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
                 Row(
                   children: [
-                    Text(details.stageName,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),),
-                  Spacer(),
+                    Text(details.stageName, style: TextStyle(fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),),
+                    Spacer(),
                     Column(
                       children: [
-                        Text("KSH 50/-",style: TextStyle(fontSize: 18,color: Colors.white,fontWeight: FontWeight.w400),),
-                        Text("PER MUSIC",style: TextStyle(fontSize: 10,color: Colors.white),),
+                        Text("KSH 50/-", style: TextStyle(fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400),),
+                        Text("PER MUSIC",
+                          style: TextStyle(fontSize: 10, color: Colors.white),),
                       ],
                     ),
                   ],
                 ),
-                Text(details.description,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),),
+                Text(details.description, style: TextStyle(fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),),
                 SizedBox(height: 20,),
                 Container(
                   width: double.infinity,
                   height: 160,
-                  child:ClipRRect(
-                    borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    // Adjust the radius value as needed
                     child: Image.asset(
                       "assets/d.jpg",
                       width: double.infinity,
@@ -225,7 +240,10 @@ leading:  IconButton(onPressed: (){
                 SizedBox(height: 20,),
 
                 Container(
-                    child: Text("Search to request",style: TextStyle(fontSize:18,fontWeight: FontWeight.w600,color: Colors.white),)),
+                    child: Text("Search to request", style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),)),
                 SizedBox(height: 20,),
                 Container(
                   child: TextField(
@@ -241,16 +259,17 @@ leading:  IconButton(onPressed: (){
 
                       prefixIcon: IconButton(
                           onPressed: () {
-                            fetchRequests()  ;                        },
+                            fetchRequests();
+                          },
                           icon: Icon(Icons.search)),
-                      contentPadding: EdgeInsets.only(left: 20,right: 20),
+                      contentPadding: EdgeInsets.only(left: 20, right: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                 ),
-              SizedBox(height: 20,),
+                SizedBox(height: 20,),
                 DJListItem(searchResults: _searchResults),
 
               ],
@@ -258,8 +277,9 @@ leading:  IconButton(onPressed: (){
         ],),
     );
   }
-  Widget  DJListItem({required List<Requests> searchResults}){
-    return  Stack(
+
+  Widget DJListItem({required List<Requests> searchResults}) {
+    return Stack(
       children: [
         SingleChildScrollView(
           child: Column(
@@ -274,7 +294,8 @@ leading:  IconButton(onPressed: (){
                     return Container(
                       margin: EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(),
-                      child: ListTile(
+                      child:
+                      ListTile(
                         leading: Container(
                           width: 60,
                           height: 80,
@@ -314,10 +335,19 @@ leading:  IconButton(onPressed: (){
                           ],
                         ),
                         trailing: Checkbox(
-                          value: isChecked,
+                          // value: isChecked == index
+                          value: _selectedSongs.contains(song),
                           onChanged: (bool? value) {
                             setState(() {
-                              isChecked = value!;
+                              if (value ?? false) {
+                                _selectedSongs.add(song);
+                                // isChecked = index;
+                              } else {
+                                _selectedSongs.remove(song);
+                                //isChecked = null;
+                              }
+                              // songAmountController.text =
+                              //     (_selectedSongs.length * 50).toString();
                             });
                           },
                         ),
@@ -336,8 +366,19 @@ leading:  IconButton(onPressed: (){
             width: 100,
             height: 50,
             child: FloatingActionButton(
-              onPressed: () {
-                // Handle button press
+              onPressed:  _selectedSongs.isEmpty
+                  ? null
+                  : () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: RequestMusic(
+                            selectedSongs: _selectedSongs,
+                            onProceed: () => _handleProceed(context)),
+
+                      );
+                    });
               },
               child: Text("REQUEST"),
             ),
@@ -345,28 +386,63 @@ leading:  IconButton(onPressed: (){
         ),
       ],
     );
-
-
   }
-  Widget RequestMusic(){
+
+  Widget RequestMusic({required List<
+      Requests> selectedSongs, required void Function() onProceed}) {
+
     return Container(
       child: Column(
         children: [
           Container(
-              child: Text("Request Music",style: TextStyle(fontWeight:FontWeight.w600,fontSize: 16),textAlign: TextAlign.start,)),
+              child:
+              Text("Confirm Request to proceed",
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                textAlign: TextAlign.start,)
+          ),
           SizedBox(height: 20,),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(child: Text("Song Name",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.black),),),
+              Text("Selected Songs:",
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                textAlign: TextAlign.start,),
+
+              Container(
+                width: 400,
+                height: 150, // Adjusted height to make it scrollable
+                child: Scrollbar(
+                  child: ListView.builder(
+                    itemCount: selectedSongs.length,
+                    itemBuilder: (context, index) {
+                      final song = selectedSongs[index];
+                      return ListTile(
+                        contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 10), // Adjusted padding
+                        title: Text(
+                          '${index + 1}. ${song.title} - ${song.artistName}',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              SizedBox(height: 20,),
+              Container(child: Text("Enter PhoneNumber", style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.black),),),
               SizedBox(height: 10,),
               Container(
                 child: TextField(
-                  controller: songTitleController,
+                  controller: phoneController,
                   decoration: InputDecoration(
-                    hintText: 'time of my life',
+                    prefixText: '+254 | ',
+                    prefixStyle: TextStyle(color: Colors.black, fontSize: 16),
+                    hintText: '703*******',
                     hintStyle: TextStyle(color: Colors.grey),
-                    contentPadding: EdgeInsets.only(left: 20,right: 20),
+                    contentPadding: EdgeInsets.only(left: 20, right: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -374,35 +450,19 @@ leading:  IconButton(onPressed: (){
                 ),
               ),
               SizedBox(height: 20,),
-              Container(child: Text("Artist",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.black),),),
-              SizedBox(height: 10,),
-
-              Container(
-
-                child: TextField(
-                  controller:songArtistController,
-                  decoration: InputDecoration(
-                    hintText: 'Nyashinski',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    contentPadding: EdgeInsets.only(left: 20,right: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-
-                    ),
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 20,),
-              Container(child: Text("Charges Per Request",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w300,color: Colors.black),),),
+              Container(child: Text("Charges Per Request", style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.black),),),
               SizedBox(height: 10,),
               Container(
                 child: TextField(
                   controller: songAmountController,
+                  //readOnly: true,
                   decoration: InputDecoration(
-                    hintText: 'Enter amount',
+                    //hintText: 'Enter amount',
                     hintStyle: TextStyle(color: Colors.grey),
-                    contentPadding: EdgeInsets.only(left: 20,right: 20),
+                    contentPadding: EdgeInsets.only(left: 20, right: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -419,41 +479,15 @@ leading:  IconButton(onPressed: (){
 
             child: ElevatedButton(
               onPressed: () {
-                // // Implement your login functionality here
-                // var payload = {
-                //   "Title":  titleController.text,
-                //   "Description": descriptionController.text,
-                //   "Venue": venueController.text,
-                //   "ImageUrl": "https://fastly.picsum.photos/id/16/2500/1667.jpg?hmac=uAkZwYc5phCRNFTrV_prJ_0rP0EdwJaZ4ctje2bY7aE",
-                //   "EventTime": _startDate.toString(),
-                //   "SongRate": int.parse(songRateController.text)
-                //   // "Title": titleController.text,
-                //   // "Description": descriptionController.text,
-                //   // "Venue": venueController.text,
-                //   // "ImageUrl": "https://fastly.picsum.photos/id/16/2500/1667.jpg?hmac=uAkZwYc5phCRNFTrV_prJ_0rP0EdwJaZ4ctje2bY7aE",
-                //   // "EventTime": _startDate,
-                //   // "SongRate": int.parse(songRateController.text),
-                // };
-                // if (kDebugMode) {
-                //   print(payload);
-                // }
-                // createEvents(payload).then((value){
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (context) => MyHomePage()),
-                //   );
-                // }).catchError((onError){
-                //   if (onError is UnableToProcess){
-                //     EasyLoading.showError(onError.reason,dismissOnTap: true,duration: Duration(seconds: 20));
-                //   }else{
-                //     EasyLoading.showError("An error occurred, please try again",dismissOnTap: true,duration: Duration(seconds: 20));
-                //   }
-                // });
+                onProceed();
               },
               style: ElevatedButton.styleFrom(
-                primary: Colors.pinkAccent, // Background color of the button
-                onPrimary: Colors.white, // Text color of the button
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15), // Button padding
+                primary: Colors.yellow,
+                // Background color of the button
+                onPrimary: Colors.black,
+                // Text color of the button
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                // Button padding
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10), // Rounded corners
                 ),
@@ -470,6 +504,142 @@ leading:  IconButton(onPressed: (){
     );
   }
 
+  Widget Confirm(){
+    return Container(
+      child: Column(children: [
+        Text("Confirm Requst"),
+        SizedBox(height: 20,),
+        Container(
+          width: double.infinity,
+
+          child: ElevatedButton(
+            onPressed: () {
+
+             },
+            style: ElevatedButton.styleFrom(
+              primary: Colors.yellow,
+              // Background color of the button
+              onPrimary: Colors.black,
+              // Text color of the button
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              // Button padding
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), // Rounded corners
+              ),
+            ),
+            child: Text(
+              'Confirm',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+
+      ],),
+    );
+  }
+
+  Future<void> _sendPaymentRequest() async {
+    final endpoint = "https://pay.mocyiltd.com/mpesa/express/create";
+    var url = Uri.parse(endpoint);
+    Map<String, dynamic> paymentData = {
+
+      "ConsumerKey": "8cYAoiXNdFA2wyUbnZmA0Guf7uvQRIoGEezGA2U5RCeCeRVC",
+      "ConsumerSecret": "gKMslMZTurIdoxWADo2O9Vm5OA7rnw1gkj8A3ME1ys7U2gSWNuULCHCswAQ3iDEF",
+      "Passkey": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+      "BusinessShortCode": "174379",
+      "TransactionType": "CustomerPayBillOnline",
+      "Amount": songAmountController.text,
+      "PhoneNumber": '254${phoneController.text}',
+      "TransactionDesc": "Payment for Goods",
+      "CallBackURL": "https://api.selekta.cc/transactions/mpesa/stk/callback"
+    };
+
+    try {
+      EasyLoading.show(status: 'Loading...');
+
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(paymentData),
+      );
+      if (response.statusCode == 200) {
+        EasyLoading.dismiss();
+        EasyLoading.showSuccess('Payment Initiated successfully!');
+        await Future.delayed(Duration(seconds: 3));
+
+        // _confirmRequest();
+      } else {
+        EasyLoading.dismiss();
+        EasyLoading.showError(
+            'Failed to send payment request. Status code: ${response
+                .statusCode}');
+        print("Failed to send payment request. Status code: ${response
+            .statusCode}");
+        print("Failed to send payment request. Status code: ${response
+            .statusCode}");
+      }
+    } catch (error) {
+      EasyLoading.dismiss();
+      EasyLoading.showError(
+          'Error occurred while sending payment request: $error');
+      print("Error occurred while sending payment request: $error");
+    }
+  }
+  Future<void> _confirmRequest() async {
+    final endpoint = "https://pay.mocyiltd.com/mpesa/express/create";
+    var url = Uri.parse(endpoint);
+    List<String> selectedSongsTitles = _selectedSongs.map((song) => '${song.title} - ${song.artistName}').toList();
+    String requestMessage = selectedSongsTitles.join(', ');
+    Map<String, dynamic> paymentData = {
+        "EventID": 14,
+        "ArtistID": 3,
+        "RequestMessage": requestMessage,
+        "Status": -2,
+        "TransactionID": 2,
+        "Amount": 1
+    };
+    if (kDebugMode) {
+      print(paymentData);
+    }
+    try {
+      EasyLoading.show(status: 'Wait for confirmation...');
+
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Authorization': '63a8960b-bbed-4f80-8414-143378a2bd13',
+        },
+        body: jsonEncode(paymentData),
+      );
+      if (response.statusCode == 200) {
+        EasyLoading.dismiss();
+        EasyLoading.showSuccess('Request confirmed successfully!');
+      } else {
+        EasyLoading.dismiss();
+        EasyLoading.showError(
+            'Confirmation Failed ${response.statusCode}');
+        print("Confirmation Failed${response
+            .statusCode}");
+        print("Confirmation Failed ${response
+            .statusCode}");
+      }
+    } catch (error) {
+      EasyLoading.dismiss();
+      EasyLoading.showError(
+          'Error occurred while sending  request: $error');
+      print("Error occurred while sending  request: $error");
+    }
+  }
+
+  void _handleProceed(BuildContext dialogContext) async {
+    _sendPaymentRequest();
+    await Future.delayed(Duration(seconds: 2));
+    Navigator.of(dialogContext).pop();
+  }
 }
 
 class CurvedClipper extends CustomClipper<Path> {

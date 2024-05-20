@@ -29,11 +29,7 @@ class _LandingPageState extends State<LandingPage> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.black, Colors.purple, Colors.pink],
-          ),
+        color: Color(0xFFF150B29)
         ),
         child: Center(
           child: _widgetOptions.elementAt(_selectedIndex),
