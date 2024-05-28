@@ -11,10 +11,15 @@ import '../models/events_modell.dart';
 import '../models/requests.dart';
 import '../utils/app_utils.dart';
 import '../utils/exceptions.dart';
+import '../utils/shimmer_look.dart';
 import 'landing_page.dart';
 
 class EventDetails extends StatefulWidget {
-  const EventDetails({super.key});
+   final int eventId;
+
+    EventDetails(
+   {required this.eventId}
+        );
 
   @override
   State<EventDetails> createState() => _EventDetailsState();
@@ -22,6 +27,8 @@ class EventDetails extends StatefulWidget {
 
 class _EventDetailsState extends State<EventDetails> {
   List<ArtistDetailsModel> artistDetails = [];
+  late Future<List<ArtistDetailsModel>> eventsDetailsFuture;
+
   final characterCounts = <String, int>{};
   String access_token = "";
   final TextEditingController songTitleController = TextEditingController();
@@ -32,9 +39,7 @@ class _EventDetailsState extends State<EventDetails> {
   bool isLoading = false;
   List<Requests> _searchResults = [];
   List<Requests> _selectedSongs = [];
-
   TextEditingController _searchController = TextEditingController();
-
   int? isChecked;
 
   // fetchRequests(){
@@ -66,8 +71,6 @@ class _EventDetailsState extends State<EventDetails> {
 
     );
   }
-
-
   bool isBalancedString(String inputString) {
     // Count occurrences of each character.
     final characterCounts = <String, int>{};
@@ -82,7 +85,6 @@ class _EventDetailsState extends State<EventDetails> {
     // Check if there is only one distinct count.
     return countSet.length == 1;
   }
-
   bool balanced(String inputString) {
     final numberCount = <String, int>{};
     for (var character in inputString.runes.map((code) =>
@@ -99,45 +101,53 @@ class _EventDetailsState extends State<EventDetails> {
 
     //return true;
   }
+  Future<List<ArtistDetailsModel>> loadEventsDetails(int artistId) async {
+    try {
+      String accessToken = await getPrefsString("access_token");
 
-  loadEventsDetails() {
-    getPrefsString("access_token").then((value) async {
-      if (value.isEmpty) {
-        return;
-      }
+      /*if (accessToken.isEmpty) {
+      print("value is empty ++++++++");
+      return [];
+    }*/
 
       var payload = {
-        "user_token": access_token,
-        "artist_id": 2
+        // "user_token": access_token,
+        "artist_id": artistId
       };
 
       if (kDebugMode) {
+        print('this is my details payload artist id $artistId');
         print(payload);
       }
 
-      getArtistDetails(payload).then((value) {
-        artistDetails = value;
-        setState(() {
-          artistDetails = value;
-        });
-      }).catchError((onError) {
-        if (onError is UnableToProcess) {
-          EasyLoading.showError("An error occurred:${onError.reason} ",
-              duration: Duration(seconds: 20), dismissOnTap: true);
-        } else {
-          EasyLoading.showError(
-              "Error loading artist data ", duration: Duration(seconds: 20),
-              dismissOnTap: true);
-        }
+      List<ArtistDetailsModel> artistDetails = await getArtistDetails(payload);
+
+      setState(() {
+        this.artistDetails = artistDetails;
+      });
+
+      return artistDetails;
+    } catch (onError) {
+      if (onError is UnableToProcess) {
+        EasyLoading.showError("An error occurred: ${onError.reason}",
+            duration: Duration(seconds: 20), dismissOnTap: true);
+      } else {
+        EasyLoading.showError(
+            "Error loading artist data",
+            duration: Duration(seconds: 20),
+            dismissOnTap: true
+        );
       }
-      );
-    });
+      return [];
+    }
   }
+
+
 
 
   @override
   void initState() {
-    loadEventsDetails();
+    eventsDetailsFuture= loadEventsDetails(widget.eventId);
     fetchRequests();
     // getData();
     super.initState();
@@ -148,17 +158,13 @@ class _EventDetailsState extends State<EventDetails> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFFF150B29),
-
           leading: IconButton(onPressed: () {
             Navigator.pop(context);
           }
               , icon: Icon(Icons.chevron_left, color: Colors.grey,)),
           title: Container(
-
             child: Row(
               children: [
-
-
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   // Adjust the radius value as needed
@@ -174,14 +180,36 @@ class _EventDetailsState extends State<EventDetails> {
           ),
 
         ),
-        body: SingleChildScrollView(
-            child: Column(
-              children: [
-
-                for(var details in artistDetails)Details(details)
-              ],
-            )
-        ));
+        body: FutureBuilder<List<ArtistDetailsModel>>(
+          future: eventsDetailsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return  OdiShimmerComponent(height: 500);
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('No artist details found'));
+            } else {
+              var artistDetails = snapshot.data!;
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    for (var details in artistDetails) Details(details),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+    );
+        // SingleChildScrollView(
+        //     child: Column(
+        //       children: [
+        //         //Text("james Theme.of(context)",)
+        //         for(var details in artistDetails)Details(details)
+        //       ],
+        //     )
+        // ));
   }
 
   // for(var details in artistDetails)Details(details)
@@ -190,7 +218,6 @@ class _EventDetailsState extends State<EventDetails> {
     return Container(
       decoration: BoxDecoration(
           color: Color(0xFFF150B29)
-
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,7 +227,6 @@ class _EventDetailsState extends State<EventDetails> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
                   children: [
                     Text(details.stageName, style: TextStyle(fontSize: 20,
@@ -236,9 +262,7 @@ class _EventDetailsState extends State<EventDetails> {
                     ),
                   ),
                 ),
-
                 SizedBox(height: 20,),
-
                 Container(
                     child: Text("Search to request", style: TextStyle(
                         fontSize: 18,
@@ -392,115 +416,118 @@ class _EventDetailsState extends State<EventDetails> {
       Requests> selectedSongs, required void Function() onProceed}) {
 
     return Container(
-      child: Column(
-        children: [
-          Container(
-              child:
-              Text("Confirm Request to proceed",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                textAlign: TextAlign.start,)
-          ),
-          SizedBox(height: 20,),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            Container(
+                child:
+                Text("Confirm Request to proceed",
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  textAlign: TextAlign.start,)
+            ),
+            SizedBox(height: 20,),
 
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Selected Songs:",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                textAlign: TextAlign.start,),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Selected Songs:",
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  textAlign: TextAlign.start,),
 
-              Container(
-                width: 400,
-                height: 150, // Adjusted height to make it scrollable
-                child: Scrollbar(
-                  child: ListView.builder(
-                    itemCount: selectedSongs.length,
-                    itemBuilder: (context, index) {
-                      final song = selectedSongs[index];
-                      return ListTile(
-                        contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 10), // Adjusted padding
-                        title: Text(
-                          '${index + 1}. ${song.title} - ${song.artistName}',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              SizedBox(height: 20,),
-              Container(child: Text("Enter PhoneNumber", style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.black),),),
-              SizedBox(height: 10,),
-              Container(
-                child: TextField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                    prefixText: '+254 | ',
-                    prefixStyle: TextStyle(color: Colors.black, fontSize: 16),
-                    hintText: '703*******',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    contentPadding: EdgeInsets.only(left: 20, right: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                Container(
+                  width: 400,
+                  height: 150, // Adjusted height to make it scrollable
+                  child: Scrollbar(
+                    child: ListView.builder(
+                      itemCount: selectedSongs.length,
+                      itemBuilder: (context, index) {
+                        final song = selectedSongs[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 10), // Adjusted padding
+                          title: Text(
+                            '${index + 1}. ${song.title} - ${song.artistName}',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 20,),
-              Container(child: Text("Charges Per Request", style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.black),),),
-              SizedBox(height: 10,),
-              Container(
-                child: TextField(
-                  controller: songAmountController,
-                  //readOnly: true,
-                  decoration: InputDecoration(
-                    //hintText: 'Enter amount',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    contentPadding: EdgeInsets.only(left: 20, right: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                SizedBox(height: 20,),
+                Container(child: Text("Enter PhoneNumber", style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.black),),),
+                SizedBox(height: 10,),
+                Container(
+                  child: TextField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      prefixText: '+254 | ',
+                      prefixStyle: TextStyle(color: Colors.black, fontSize: 16),
+                      hintText: '703*******',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      contentPadding: EdgeInsets.only(left: 20, right: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-
                   ),
                 ),
-              ),
-            ],),
+                SizedBox(height: 20,),
+                Container(child: Text("Charges Per Request", style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.black),),),
+                SizedBox(height: 10,),
+                Container(
+                  child: TextField(
+                    controller: songAmountController,
+                    //readOnly: true,
+                    decoration: InputDecoration(
+                      //hintText: 'Enter amount',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      contentPadding: EdgeInsets.only(left: 20, right: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
 
-
-          SizedBox(height: 30,),
-          Container(
-            width: double.infinity,
-
-            child: ElevatedButton(
-              onPressed: () {
-                onProceed();
-              },
-              style: ElevatedButton.styleFrom(
-                primary: Colors.yellow,
-                // Background color of the button
-                onPrimary: Colors.black,
-                // Text color of the button
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                // Button padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                'Proceed',
-                style: TextStyle(
-                  fontSize: 16,
+              ],),
+
+
+            SizedBox(height: 30,),
+            Container(
+              width: double.infinity,
+
+              child: ElevatedButton(
+                onPressed: () {
+                  onProceed();
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.yellow,
+                  // Background color of the button
+                  onPrimary: Colors.black,
+                  // Text color of the button
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  // Button padding
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Rounded corners
+                  ),
+                ),
+                child: Text(
+                  'Proceed',
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],),
+          ],),
+      ),
     );
   }
 
@@ -571,7 +598,7 @@ class _EventDetailsState extends State<EventDetails> {
         EasyLoading.showSuccess('Payment Initiated successfully!');
         await Future.delayed(Duration(seconds: 3));
 
-        // _confirmRequest();
+         _confirmRequest();
       } else {
         EasyLoading.dismiss();
         EasyLoading.showError(
@@ -589,6 +616,7 @@ class _EventDetailsState extends State<EventDetails> {
       print("Error occurred while sending payment request: $error");
     }
   }
+
   Future<void> _confirmRequest() async {
     final endpoint = "https://pay.mocyiltd.com/mpesa/express/create";
     var url = Uri.parse(endpoint);
@@ -600,7 +628,9 @@ class _EventDetailsState extends State<EventDetails> {
         "RequestMessage": requestMessage,
         "Status": -2,
         "TransactionID": 2,
-        "Amount": 1
+        "Amount":  songAmountController.text,
+       "Mobile": '254${phoneController.text}'
+
     };
     if (kDebugMode) {
       print(paymentData);
@@ -622,8 +652,10 @@ class _EventDetailsState extends State<EventDetails> {
         EasyLoading.dismiss();
         EasyLoading.showError(
             'Confirmation Failed ${response.statusCode}');
+
         print("Confirmation Failed${response
             .statusCode}");
+
         print("Confirmation Failed ${response
             .statusCode}");
       }

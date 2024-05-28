@@ -10,31 +10,75 @@ import 'package:http/http.dart' as http;
 import '../models/requests.dart';
 import '../utils/exceptions.dart';
 
-
-Future<List<EventsModel>> getEvents(payload) async{
-  const endpoint =  "https://api.selekta.cc/events/list";
+Future<List<EventsModel>> getEvents(payload) async {
+  const endpoint = "https://api.selekta.cc/events/list";
   var url = Uri.parse(endpoint);
-  var headers = {
-    "Content-Type": "application/json"
-  };
-  var response = await http.post(url,headers: headers,body: jsonEncode(payload));
-  var decoded = jsonDecode(response.body);
+
   if (kDebugMode) {
-    print(decoded);
+    print("Requesting URL: $url");
   }
 
-  if (response.statusCode < 200 || response.statusCode > 299) {
-    throw UnableToProcess(reason: decoded.toString());
-  }
-  if (decoded.containsKey("data")){
-    var jsonSkills = decoded['data'];
+  try {
+    var response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(payload),
+    );
 
-    return List.generate(jsonSkills.length, (index) => EventsModel.fromJson(jsonSkills[index]));
-  }else{
-    return [];
-  }
+    if (kDebugMode) {
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+    }
 
+    if (response.statusCode < 200 || response.statusCode > 299) {
+      throw UnableToProcess(reason: "HTTP error: ${response.statusCode}");
+    }
+
+    var decoded = jsonDecode(response.body);
+
+    if (kDebugMode) {
+      print("Decoded JSON: $decoded");
+    }
+
+    if (decoded.containsKey("data")) {
+      var jsonSkills = decoded['data'];
+      return List.generate(jsonSkills.length, (index) => EventsModel.fromJson(jsonSkills[index]));
+    } else {
+      return [];
+    }
+  } catch (error) {
+    if (kDebugMode) {
+      print("Error occurred: $error");
+    }
+    throw UnableToProcess(reason: error.toString());
+  }
 }
+
+// Future<List<EventsModel>> getEvents(payload) async{
+//   const endpoint =  "https://api.selekta.cc/events/list";
+//   var url = Uri.parse(endpoint);
+//
+//   if (kDebugMode) {
+//     print("Requesting URL: $url");
+//   }
+//   var response = await http.post(url,body: jsonEncode(payload));
+//   var decoded = jsonDecode(response.body);
+//   if (kDebugMode) {
+//     print(decoded);
+//   }
+//
+//   if (response.statusCode < 200 || response.statusCode > 299) {
+//     throw UnableToProcess(reason: decoded.toString());
+//   }
+//   if (decoded.containsKey("data")){
+//     var jsonSkills = decoded['data'];
+//
+//     return List.generate(jsonSkills.length, (index) => EventsModel.fromJson(jsonSkills[index]));
+//   }else{
+//     return [];
+//   }
+//
+// }
 
 
 Future<Map<String, dynamic>> createEvents(Map<String,dynamic> payload) async {

@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
+
 import '../utils/app_utils.dart';
 import '../utils/exceptions.dart';
 import 'package:http/http.dart' as http;
@@ -34,11 +36,12 @@ Future<Map<String, dynamic>> login(Map<String,dynamic> payload) async {
     'Accept': 'application/json',
     "Content-Type": "application/json"
   };
-  print(payload);
 
   var response = await http.post(url,headers: headers, body: jsonEncode(payload));
   var decoded = jsonDecode(response.body);
-  print(decoded);
+  if (kDebugMode) {
+    print(decoded);
+  }
 
   if (response.statusCode < 200 || response.statusCode > 299) {
     throw UnableToProcess(reason: decoded.toString());

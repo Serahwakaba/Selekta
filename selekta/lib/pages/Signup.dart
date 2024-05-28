@@ -167,7 +167,6 @@ class _SignUpPageState extends State<SignUpPage> with SingleTickerProviderStateM
                             return;
                           }
                           login(payload).then((value){
-
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => MyHomePage()),

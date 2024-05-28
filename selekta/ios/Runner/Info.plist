@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need access to your location to show network connectivity status.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We need access to your location to show network connectivity status.</string>
 </dict>
 </plist>

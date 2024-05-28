@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../data/eventsData.dart';
 import '../models/events_modell.dart';
 import '../utils/exceptions.dart';
+import '../utils/shimmer_look.dart';
 import 'Signup.dart';
 import 'event_details.dart';
 import 'landing_page.dart';
+import 'no_internet.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -26,7 +30,49 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController venueController = TextEditingController();
   final TextEditingController eventTimeController = TextEditingController();
   final TextEditingController songRateController = TextEditingController();
+  late ConnectivityResult _connectivityResult;
+  final Connectivity _connectivity = Connectivity();
+  
+  @override
+  void initState() {
+    _checkConnectivity();
 
+    eventsFuture = loadEvents();
+    // getData();
+    super.initState();
+  }
+  late Future<List<EventsModel>> eventsFuture;
+
+  Future<void> _checkConnectivity() async {
+    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+      EasyLoading.showSuccess(
+          "Internet connection restored", duration: Duration(seconds: 5));
+    } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
+      // EasyLoading.showSuccess(
+      //     "W", duration: Duration(seconds: 5));
+    } else if (connectivityResult.contains(ConnectivityResult.ethernet)) {
+      EasyLoading.showSuccess(
+          "Ethernet connection available.", duration: Duration(seconds: 5));
+    } else if (connectivityResult.contains(ConnectivityResult.vpn)) {
+      EasyLoading.showSuccess(
+          "Vpn connection active.", duration: Duration(seconds: 5));
+    } else if (connectivityResult.contains(ConnectivityResult.bluetooth)) {
+      EasyLoading.showSuccess(
+          "Bluetooth connection available", duration: Duration(seconds: 5));
+    } else if (connectivityResult.contains(ConnectivityResult.other)) {
+      EasyLoading.showSuccess(
+          " Connected to a network", duration: Duration(seconds: 5));
+    } else if (connectivityResult.contains(ConnectivityResult.none)) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Internet()),
+      );
+    // EasyLoading.showError("", duration: Duration(seconds: 5));
+
+    }
+
+  }
 
 
   Future<void> _selectStartDate(BuildContext context) async {
@@ -57,34 +103,39 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  loadEvents(){
-    var payload = { };
-  getEvents(payload).then((value){
-      eventsModel  = value;
-      setState(() {
-        eventsModel  = value;
-      });
-    }).catchError((onError){
-      if(onError is UnableToProcess){
-        EasyLoading.showError("An error occurred:${onError.reason} ",duration: Duration(seconds: 20),dismissOnTap: true);
-      }else{
-        EasyLoading.showError("Error loading events data ",duration: Duration(seconds: 20),dismissOnTap: true);
-
+  Future<List<EventsModel>> loadEvents() async {
+    var payload = {};
+    try {
+      var value = await getEvents(payload);
+      return value;
+    } catch (onError) {
+      if (onError is SocketException) {
+        EasyLoading.showError(
+            "No internet connection. Please try again later.",
+            duration: Duration(seconds: 5));
+      } else if (onError is UnableToProcess) {
+        EasyLoading.showError(
+            "An error occurred:${onError.reason}",
+            duration: Duration(seconds: 20),
+            dismissOnTap: true);
+      } else {
+        EasyLoading.showError(
+            "Error loading events data",
+            duration: Duration(seconds: 20),
+            dismissOnTap: true);
       }
-
-    });
+      rethrow;
+    }
   }
 
-  @override
-  void initState() {
-    loadEvents();
-   // getData();
-    super.initState();
-  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
+      body:
+
+      SingleChildScrollView(
         child: Container(
           decoration: BoxDecoration(
             color:  Color(0xFFF150B29)
@@ -205,14 +256,36 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   )),
              SizedBox(height: 20,),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      for(var event in eventsModel)eventsWidget(event)
-                    ],
-                  ),
+                FutureBuilder<List<EventsModel>>(
+                  future: eventsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return  OdiShimmerComponent(height: 500);
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No events found'));
+                    } else {
+                      final events = snapshot.data!;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            for (var event in events) eventsWidget(event)
+                          ],
+                        ),
+                      );
+                    }
+                  },
                 ),
+                // SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   child: Row(
+                //     children: [
+                //       for(var event in eventsModel)eventsWidget(event)
+                //     ],
+                //   ),
+                // ),
 
                 SizedBox(height: 30,),
                 Container(
@@ -232,28 +305,64 @@ class _MyHomePageState extends State<MyHomePage> {
                 //     ],
                 //   ),
                 // ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Column(
-                    children: [
-                      // Split events into pairs
-                      for (int i = 0; i < eventsModel.length; i += 2)
-                        Container(
-                          margin: EdgeInsets.only(bottom: 20),
-                          child: Row(
-                            children: [
+                FutureBuilder<List<EventsModel>>(
+                  future: loadEvents(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return  OdiShimmerComponent(height: 500);
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No events found'));
+                    } else {
+                      final events = snapshot.data!;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Column(
+                          children: [
+                            for (int i = 0; i < events.length; i += 2)
                               Container(
-                                  child: eventsWidget(eventsModel[i])),
-                              if (i + 1 < eventsModel.length)
-                                Container(
-
-                                    child: eventsWidget(eventsModel[i + 1])),
-                            ],
-                          ),
+                                margin: EdgeInsets.only(bottom: 20),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      child: eventsWidget(events[i]),
+                                    ),
+                                    if (i + 1 < events.length)
+                                      Container(
+                                        child: eventsWidget(events[i + 1]),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
-                    ],
-                  ),
+                      );
+                    }
+                  },
                 ),
+                // SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   child: Column(
+                //     children: [
+                //       // Split events into pairs
+                //       for (int i = 0; i < eventsModel.length; i += 2)
+                //         Container(
+                //           margin: EdgeInsets.only(bottom: 20),
+                //           child: Row(
+                //             children: [
+                //               Container(
+                //                   child: eventsWidget(eventsModel[i])),
+                //               if (i + 1 < eventsModel.length)
+                //                 Container(
+                //
+                //                     child: eventsWidget(eventsModel[i + 1])),
+                //             ],
+                //           ),
+                //         ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -264,11 +373,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget eventsWidget(EventsModel event){
-    return GestureDetector(
+    return
+
+      GestureDetector(
       onTap: ()
       => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => EventDetails())),
+          MaterialPageRoute(builder: (context) => EventDetails(eventId: event.artistId,))),
       child: Container(
         margin: EdgeInsets.only(left: 20),
         child: Column(
@@ -332,7 +443,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onTap: ()
       => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => EventDetails())),
+          MaterialPageRoute(builder: (context) => EventDetails(eventId: event.eventId))),
       child: Container(
         margin: EdgeInsets.only(left: 20),
         child: Column(
@@ -523,6 +634,8 @@ Column(children: [
 
           child: ElevatedButton(
             onPressed: () {
+              EasyLoading.show(status: 'Creating event...');
+
               // Implement your login functionality here
               var payload = {
                 "Title":  titleController.text,
@@ -530,6 +643,7 @@ Column(children: [
                 "Venue": venueController.text,
                 "ImageUrl": "https://fastly.picsum.photos/id/16/2500/1667.jpg?hmac=uAkZwYc5phCRNFTrV_prJ_0rP0EdwJaZ4ctje2bY7aE",
                 "EventTime": _startDate.toString(),
+
                 "SongRate": int.parse(songRateController.text)
                 // "Title": titleController.text,
                 // "Description": descriptionController.text,
@@ -542,6 +656,8 @@ Column(children: [
                 print(payload);
               }
               createEvents(payload).then((value){
+                EasyLoading.dismiss();
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => MyHomePage()),
